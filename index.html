@@ -259,10 +259,10 @@
     }
 
     function onScreenResize() {
-        if (window.screen.width > 750) {
+        if (window.innerWidth > 750) {
             document.body.parentNode.style['font-size'] = '100px';
         } else {
-            document.body.parentNode.style['font-size'] = window.screen.width / 375 * 50 + 'px';
+            document.body.parentNode.style['font-size'] = window.innerWidth / 375 * 50 + 'px';
         }
     }
 
