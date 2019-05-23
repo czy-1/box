@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-hans" style="font-size: 50px">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-size: .14rem;
+            margin: 0;
+        }
+
+        .container {
+            margin: auto;
+            max-width: 750px;
+        }
+
+        .select {
+            display: flex;
+            text-align: center;
+            color: #989898;
+        }
+
+        .select .title {
+            color: #222333;
+            font-size: .32rem;
+            font-weight: bold;
+            transition: all .3s;
+        }
+
+        .select p {
+            margin: .08rem;
+        }
+
+        .select > div {
+            margin: .2rem;
+            padding: 1rem 0;
+            flex: 1;
+            background-color: #eeeeee;
+            border: .01rem solid #ccc;
+            transition: all .3s;
+        }
+
+        .select > div + div {
+            margin-left: 0;
+        }
+
+        .select .active {
+            background-color: #fee9e8;
+            color: #f6aabb;
+            border-color: #f6aabb;
+        }
+
+        .select .active .title {
+            color: #f06b6b;
+        }
+
+        .hr {
+            background-color: #eee;
+            height: .3rem;
+        }
+
+        .title {
+            font-size: .16rem;
+            color: #989898;
+            margin: .25rem;
+        }
+
+        .title .main {
+            font-weight: bold;
+            font-size: .28rem;
+            color: #3d3d3d;
+        }
+
+        .title .for {
+            color: #f6aabb;
+        }
+
+        #box {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        #box > .child {
+            width: 1.5rem;
+            height: 2rem;
+            text-align: center;
+        }
+
+        .child .icon {
+            height: 1rem;
+            background-color: #fee9e8;
+            border-radius: .5rem;
+            margin: .25rem;
+        }
+
+        .child .text {
+            color: #3d3d3d;
+        }
+
+        .child.disabled .text {
+            color: #dbdbdb;
+        }
+
+        .mask {
+            background: rgba(0, 0, 0, .4);
+            bottom: 0;
+            left: 0;
+            position: fixed;
+            top: 0;
+            right: 0;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .mask .content {
+            background-color: #fff;
+            position: relative;
+            width: 5rem;
+            height: 6rem;
+            padding: .64rem;
+            border-radius: .08rem;
+        }
+
+        .mask .close {
+            font-size: .32rem;
+            width: .48rem;
+            height: .48rem;
+            border-radius: .24rem;
+            color: #fff;
+            border: .03rem solid #fff;
+            background-color: transparent;
+            text-align: center;
+            margin-top: .64rem;
+        }
+
+        .mask h3 {
+            font-size: .32rem;
+        }
+
+        .mask p {
+            font-size: .24rem;
+            color: #555666;
+        }
+
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="select" id="selector">
+    </div>
+    <div class="hr"></div>
+    <p id="describe" class="title"><span class="main">高级版</span> ( 适合<span class="for">个人摄影师</span> ) </p>
+    <div id="box">
+    </div>
+    <div id="messageBox" style="display: none">
+        <div class="mask">
+            <div class="content">
+                <h3></h3>
+                <p></p>
+            </div>
+            <div class="close">X</div>
+        </div>
+    </div>
+</div>
+<script>
+    function setChild(containter, data) {
+        containter.innerHTML = '';
+        for (var i = 0; i < data.length; i++) {
+            var item = data[i];
+            var node = document.createElement('div');
+            var icon = document.createElement('div');
+            var text = document.createElement('div');
+            icon.className = 'icon';
+            if (item.html) {
+                text.innerHTML = item.html;
+            } else {
+                text.innerText = item.label;
+            }
+            text.className = 'text';
+            node.className = 'child';
+            if (item.disabled) {
+                node.className += ' disabled';
+            }
+            node.appendChild(icon);
+            node.appendChild(text);
+            node.setAttribute('data-index', i);
+            containter.appendChild(node);
+        }
+    }
+
+    function setDescribe(containter, data) {
+        containter.innerHTML = '<span class="main">' + data.type + '</span> ( 适合<span class="for">' + data.targetUser + '</span> ) '
+    }
+
+    var active = 0;
+    var selectorDom;
+
+    function setActive(newActive) {
+        if (+newActive === active) {
+            return;
+        }
+        selectorDom[active].className = '';
+        selectorDom[newActive].className = 'active';
+        active = +newActive;
+        var activeData = data[active];
+        setDescribe(describe, activeData);
+        setChild(box, activeData.child);
+    }
+
+    function init(seletor, describe, box, data) {
+        seletor.innerHTML = '';
+
+        selectorDom = [];
+        for (var i = 0; i < data.length; i++) {
+            var node = document.createElement('div');
+            node.setAttribute('data-index', i + '');
+            var type = document.createElement('p');
+            type.innerText = data[i].type;
+            type.className = 'title';
+            node.appendChild(type);
+            var desc = document.createElement('p');
+            desc.innerText = '适合' + data[i].targetUser;
+            node.appendChild(desc);
+            if (i === active) {
+                node.className = 'active';
+            }
+            selectorDom.push(node);
+            seletor.appendChild(node);
+        }
+
+        var activeData = data[active];
+        setDescribe(describe, activeData);
+        var child = activeData.child;
+        setChild(box, child);
+    }
+
+    var messageBox = document.getElementById('messageBox');
+    var messageBoxTitle = messageBox.children[0].children[0].children[0];
+    var messageBoxText = messageBox.children[0].children[0].children[1];
+    messageBox.children[0].children[1].addEventListener('click', function () {
+        messageBox.style.display = 'none';
+    });
+
+    function showMessage(title, text) {
+        messageBox.style.display = 'block';
+        messageBoxTitle.innerText = title;
+        messageBoxText.innerText = text;
+    }
+
+    function onScreenResize() {
+        if (window.screen.width > 750) {
+            document.body.parentNode.style['font-size'] = '100px';
+        } else {
+            document.body.parentNode.style['font-size'] = window.screen.width / 375 * 50 + 'px';
+        }
+    }
+
+    onScreenResize();
+    window.onresize = onScreenResize;
+    var box = document.getElementById('box');
+    var selector = document.getElementById('selector');
+    var describe = document.getElementById('describe');
+    var data = [
+        {
+            type: '高级版', targetUser: '独立摄影师', child: [
+                {label: '标题1', icon: '', describe: '高级版正文高级版正文高级版正文高级版正文高级版正文高级版正文高级版正文高级版正文高级版正文高级版正文'},
+                {label: '标题2', icon: '', disabled: true},
+                {label: '标题3', icon: ''},
+                {label: '标题4', icon: ''},
+                {label: '标题5', icon: '', disabled: true},
+                {label: '标题6', icon: '', disabled: true},
+                {label: '标题7', icon: '', disabled: true},
+                {label: '标题8', icon: ''},
+                {label: '标题9', icon: '', disabled: true},
+                {label: '标题10', icon: ''},
+            ]
+        },
+        {
+            type: '定制版', targetUser: '小型工作室', child: [
+                {label: '标题1', icon: ''},
+                {label: '标题2', icon: ''},
+                {label: '标题3', icon: ''},
+                {label: '标题4', icon: ''},
+                {label: '标题5', icon: ''},
+                {label: '标题6', icon: ''},
+                {label: '标题7', icon: ''},
+                {label: '标题8', icon: ''},
+                {label: '标题9', icon: ''},
+                {label: '标题10', icon: ''},
+            ]
+        }
+    ];
+    init(selector, describe, box, data);
+    selector.addEventListener('click', function (e) {
+        var target = e.target;
+        var index = target.getAttribute('data-index') || target.parentElement.getAttribute('data-index');
+        if (index) {
+            setActive(index);
+        }
+    });
+    box.addEventListener('click', function (e) {
+        var target = e.target;
+        var index = target.getAttribute('data-index') || target.parentElement.getAttribute('data-index');
+        if (index) {
+            var selectData = data[active];
+            var childData = selectData.child[index];
+            console.log(target, childData);
+            showMessage(selectData.type + '-' + childData.label, childData.describe || '');
+        }
+    })
+</script>
+</body>
+</html>
